@@ -1,0 +1,98 @@
+{
+  "Settings": {
+    "Logs": false
+  },
+
+  "Matrix": {
+    "Enabled": true,
+    "Homeserver": "https://matrix.example.org",
+    "AccessToken": "${MATRIX_ACCESS_TOKEN}",
+    "RoomID": "!yourRoomId:matrix.example.org",
+    "MsgType": "m.notice"
+  },
+
+  "Proxy": {
+    "Enabled": false,
+    "Url": "http://127.0.0.1:8080"
+  },
+
+  "Scrapling": {
+    "Enabled": true,
+    "ForceGlobal": false,
+    "Comment": "Requires: pip install 'scrapling[all]' && scrapling install",
+    "AutoFallback": true,
+    "PreferredMode": "cli",
+    "DefaultFetchMode": "stealthy-fetch",
+    "FallbackStatusCodes": [403, 429, 503],
+
+    "DefaultOptions": {
+      "headless": true,
+      "solveCaptcha": false,
+      "timeout": 60,
+      "wait": 0,
+      "disableResources": true,
+      "networkIdle": false,
+      "waitSelector": null,
+      "waitSelectorState": null,
+      "blockedDomains": [],
+      "retries": 3,
+      "retryDelay": 1
+    },
+
+    "PerUrlConfig": {
+      "https://protected-site.com/feed": {
+        "enabled": true,
+        "mode": "stealthy-fetch",
+        "solveCaptcha": true,
+        "networkIdle": true,
+        "waitSelector": ".content-ready",
+        "waitSelectorState": "visible",
+        "blockedDomains": ["ads.example.com", "tracker.example.com"],
+        "retries": 3,
+        "retryDelay": 1,
+        "htmlParseOptions": {
+          "itemSelector": "article",
+          "titleSelector": "h2",
+          "linkSelector": "a.read-more"
+        }
+      }
+    }
+  },
+
+  "SteamJSPipes": {
+    "Enabled": false,
+    "ChannelIndex": 0,
+    "Comment": "Optional SteamJSPipes routing target for the native JS runtime"
+  },
+
+  "channels": [
+    {
+      "Matrix": {
+        "Enabled": true,
+        "Comment": "Per-channel Matrix can override only selected fields, e.g. RoomID",
+        "RoomID": "!roomMain:matrix.example.org"
+      },
+      "RSS": [
+        "https://example.com/rss",
+        "https://example.org/feed.xml",
+        "https://www.youtube.com/feeds/videos.xml?channel_id=UC_CHANNEL_ID"
+      ],
+      "TimeChecker": 30,
+      "RequestSend": 5
+    }
+  ],
+
+  "channels2": [
+    {
+      "Matrix": {
+        "Enabled": true,
+        "RoomID": "!roomDev:matrix.example.org"
+      },
+      "RSS": [
+        "https://example.org/project/commits.atom"
+      ],
+      "TimeChecker": 60,
+      "RequestSend": 2
+    }
+  ]
+}
