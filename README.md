@@ -43,6 +43,7 @@ npm start
 ## Notes
 
 - this is the full Node.js build, separate from `xfeeder-minimal`
+- channel feed lists can be written as `Feeds`, `RSS`, `URLs`, or `Sources`
 - `Workshop` and `SteamJSPipes` are optional at runtime and can stay disabled in config
 - generated files like `cache.json` are ignored from git
 

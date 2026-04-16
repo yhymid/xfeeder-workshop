@@ -72,7 +72,7 @@
         "Comment": "Per-channel Matrix can override only selected fields, e.g. RoomID",
         "RoomID": "!roomMain:matrix.example.org"
       },
-      "RSS": [
+      "Feeds": [
         "https://example.com/rss",
         "https://example.org/feed.xml",
         "https://www.youtube.com/feeds/videos.xml?channel_id=UC_CHANNEL_ID"
@@ -88,7 +88,7 @@
         "Enabled": true,
         "RoomID": "!roomDev:matrix.example.org"
       },
-      "RSS": [
+      "Feeds": [
         "https://example.org/project/commits.atom"
       ],
       "TimeChecker": 60,

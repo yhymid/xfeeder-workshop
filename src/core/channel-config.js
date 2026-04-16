@@ -1,11 +1,28 @@
 "use strict";
 
+const FEED_FIELD_NAMES = ["RSS", "Feeds", "URLs", "Sources"];
+
 function normalizeFeedList(value) {
-  if (!Array.isArray(value)) return [];
-  return value
+  const list = Array.isArray(value) ? value : [value];
+  return list
     .filter((item) => typeof item === "string")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function resolveChannelFeeds(channel) {
+  const merged = [];
+  const seen = new Set();
+
+  for (const fieldName of FEED_FIELD_NAMES) {
+    for (const entry of normalizeFeedList(channel[fieldName])) {
+      if (seen.has(entry)) continue;
+      seen.add(entry);
+      merged.push(entry);
+    }
+  }
+
+  return merged;
 }
 
 function normalizeThreadValue(value) {
@@ -49,7 +66,7 @@ function normalizeChannel(channel, index) {
     sourceKey: channel.__sourceKey || null,
     Webhook: typeof channel.Webhook === "string" ? channel.Webhook.trim() : "",
     Thread: normalizeThreadValue(channel.Thread),
-    RSS: normalizeFeedList(channel.RSS),
+    RSS: resolveChannelFeeds(channel),
     TimeChecker: normalizeTimeChecker(channel.TimeChecker, 30),
     RequestSend: normalizeRequestSend(channel.RequestSend, 5),
     Discord: normalizeDiscordConfig(channel.Discord),
