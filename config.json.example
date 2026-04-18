@@ -65,8 +65,14 @@
     "Comment": "Optional SteamJSPipes routing target for the native JS runtime"
   },
 
-  "channels": [
-    {
+  "ChannelDefaults": {
+    "TimeChecker": 30,
+    "RequestSend": 5
+  },
+
+  "channels": {
+    "main": {
+      "Webhook": "${DISCORD_WEBHOOK_MAIN}",
       "Matrix": {
         "Enabled": true,
         "Comment": "Per-channel Matrix can override only selected fields, e.g. RoomID",
@@ -77,13 +83,12 @@
         "https://example.org/feed.xml",
         "https://www.youtube.com/feeds/videos.xml?channel_id=UC_CHANNEL_ID"
       ],
-      "TimeChecker": 30,
-      "RequestSend": 5
     }
-  ],
+  },
 
-  "channels2": [
-    {
+  "channels2": {
+    "dev": {
+      "Webhook": "${DISCORD_WEBHOOK_DEV}",
       "Matrix": {
         "Enabled": true,
         "RoomID": "!roomDev:matrix.example.org"
@@ -94,5 +99,5 @@
       "TimeChecker": 60,
       "RequestSend": 2
     }
-  ]
+  }
 }

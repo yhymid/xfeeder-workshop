@@ -60,9 +60,60 @@ function normalizeDiscordConfig(discordConfig) {
   return normalized;
 }
 
+function cloneDefaults(defaults) {
+  if (!defaults || typeof defaults !== "object") return {};
+  return {
+    ...defaults,
+    Discord: defaults.Discord && typeof defaults.Discord === "object" ? { ...defaults.Discord } : defaults.Discord,
+    Matrix: defaults.Matrix && typeof defaults.Matrix === "object" ? { ...defaults.Matrix } : defaults.Matrix,
+  };
+}
+
+function buildChannelFromShorthand(input, defaults) {
+  if (typeof input === "string") {
+    return {
+      ...cloneDefaults(defaults),
+      Feeds: [input],
+    };
+  }
+
+  if (Array.isArray(input)) {
+    return {
+      ...cloneDefaults(defaults),
+      Feeds: input,
+    };
+  }
+
+  if (input && typeof input === "object") {
+    const merged = {
+      ...cloneDefaults(defaults),
+      ...input,
+    };
+
+    if (defaults?.Discord || input.Discord) {
+      merged.Discord = {
+        ...(defaults?.Discord && typeof defaults.Discord === "object" ? defaults.Discord : {}),
+        ...(input.Discord && typeof input.Discord === "object" ? input.Discord : {}),
+      };
+    }
+
+    if (defaults?.Matrix || input.Matrix) {
+      merged.Matrix = {
+        ...(defaults?.Matrix && typeof defaults.Matrix === "object" ? defaults.Matrix : {}),
+        ...(input.Matrix && typeof input.Matrix === "object" ? input.Matrix : {}),
+      };
+    }
+
+    return merged;
+  }
+
+  return null;
+}
+
 function normalizeChannel(channel, index) {
   const normalized = {
     index,
+    name: channel.__channelName || null,
     sourceKey: channel.__sourceKey || null,
     Webhook: typeof channel.Webhook === "string" ? channel.Webhook.trim() : "",
     Thread: normalizeThreadValue(channel.Thread),
@@ -79,18 +130,38 @@ function normalizeChannel(channel, index) {
 
 function collectConfiguredChannels(config) {
   const result = [];
+  const channelDefaults =
+    (config && typeof config.ChannelDefaults === "object" && config.ChannelDefaults) ||
+    (config && typeof config.DefaultChannel === "object" && config.DefaultChannel) ||
+    {};
 
   for (const [key, value] of Object.entries(config || {})) {
-    if (!key.toLowerCase().startsWith("channels") || !Array.isArray(value)) {
+    if (!key.toLowerCase().startsWith("channels")) {
       continue;
     }
 
-    for (const channel of value) {
-      if (!channel || typeof channel !== "object") continue;
-      result.push({
-        ...channel,
-        __sourceKey: key,
-      });
+    if (Array.isArray(value)) {
+      for (const channel of value) {
+        const built = buildChannelFromShorthand(channel, channelDefaults);
+        if (!built || typeof built !== "object") continue;
+        result.push({
+          ...built,
+          __sourceKey: key,
+        });
+      }
+      continue;
+    }
+
+    if (value && typeof value === "object") {
+      for (const [channelName, channelValue] of Object.entries(value)) {
+        const built = buildChannelFromShorthand(channelValue, channelDefaults);
+        if (!built || typeof built !== "object") continue;
+        result.push({
+          ...built,
+          __sourceKey: key,
+          __channelName: channelName,
+        });
+      }
     }
   }
 
