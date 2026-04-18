@@ -5,7 +5,7 @@ const { download } = require("../parsers/downloader");
 const { getWithFallback, postWithFallback } = require("../client");
 const { loadConfig } = require("../config-loader");
 const { createCacheStore } = require("../core/cache-store");
-const { collectConfiguredChannels } = require("../core/channel-config");
+const { collectConfiguredChannels, summarizeChannel, validateChannels } = require("../core/channel-config");
 const { createFeedPipeline } = require("../core/feed-pipeline");
 const { createChannelRunner } = require("./channel-runner");
 const { startChannelQueue } = require("./runtime");
@@ -44,6 +44,24 @@ function loadWorkshopParsers(config) {
   return workshopParsers;
 }
 
+function logChannelSummary(channels) {
+  const warnings = validateChannels(channels);
+  for (const warning of warnings) {
+    console.warn(warning);
+  }
+
+  for (const summary of (channels || []).map(summarizeChannel)) {
+    const targets = [
+      summary.hasWebhook ? "webhook" : null,
+      summary.hasDiscord ? "discord" : null,
+      summary.hasMatrix ? "matrix" : null,
+    ].filter(Boolean).join("+") || "none";
+    console.log(
+      `[Config] ${summary.label}: feeds=${summary.feeds}, targets=${targets}, interval=${summary.interval}s, burst=${summary.burst}`
+    );
+  }
+}
+
 function createApp({ configPath = "./config.json", cachePath = "./cache.json" } = {}) {
   const config = loadConfig(configPath);
   const workshopParsers = loadWorkshopParsers(config);
@@ -75,6 +93,7 @@ function createApp({ configPath = "./config.json", cachePath = "./cache.json" } 
 
   const allChannels = collectConfiguredChannels(config);
   console.log(`[System] Channels to process: ${allChannels.length}`);
+  logChannelSummary(allChannels);
 
   const steamBridge = startSteamJSPipesIfEnabled({
     config,

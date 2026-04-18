@@ -170,8 +170,45 @@ function collectConfiguredChannels(config) {
     .filter((channel) => channel && typeof channel === "object");
 }
 
+function summarizeChannel(channel) {
+  const label = channel.name || `${channel.sourceKey || "channels"}#${channel.index + 1}`;
+  return {
+    label,
+    feeds: Array.isArray(channel.RSS) ? channel.RSS.length : 0,
+    hasWebhook: Boolean(channel.Webhook),
+    hasDiscord: Boolean(channel.Discord),
+    hasMatrix: Boolean(channel.Matrix),
+    interval: channel.TimeChecker,
+    burst: channel.RequestSend,
+  };
+}
+
+function validateChannels(channels) {
+  const warnings = [];
+
+  for (const channel of channels || []) {
+    const label = channel.name || `${channel.sourceKey || "channels"}#${channel.index + 1}`;
+
+    if (!channel.Webhook && !channel.Discord && !channel.Matrix) {
+      warnings.push(`[Config] ${label}: missing delivery target (Webhook, Discord or Matrix).`);
+    }
+
+    if (!Array.isArray(channel.RSS) || channel.RSS.length === 0) {
+      warnings.push(`[Config] ${label}: missing feed sources.`);
+    }
+
+    if (channel.RSS && new Set(channel.RSS).size !== channel.RSS.length) {
+      warnings.push(`[Config] ${label}: contains duplicate feed URLs.`);
+    }
+  }
+
+  return warnings;
+}
+
 module.exports = {
   collectConfiguredChannels,
   normalizeChannel,
   normalizeDiscordConfig,
+  summarizeChannel,
+  validateChannels,
 };
